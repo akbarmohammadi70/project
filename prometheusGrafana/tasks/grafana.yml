@@ -1,0 +1,18 @@
+---
+- name: Deploy latest version of Grafana chart inside monitoring namespace with values
+  kubernetes.core.helm:
+    name: grafana
+    chart_ref: grafana/grafana
+    release_namespace: grafana
+    create_namespace: true
+    values:
+      persistence.enabled: true  
+      adminPassword: qazwsx
+      datasources.”datasources\.yaml”.apiVersion: 1   
+      datasources.”datasources\.yaml”.datasources[0].name: Prometheus  
+      datasources.”datasources\.yaml”.datasources[0].type: prometheus    
+      datasources.”datasources\.yaml”.datasources[0].url: http://{{ node1 }}.{{ port }}   
+      datasources.”datasources\.yaml”.datasources[0].access: proxy     
+      datasources.”datasources\.yaml”.datasources[0].isDefault: true 
+  tags:
+    - grafana

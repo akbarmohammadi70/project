@@ -1,0 +1,28 @@
+variables:
+  DOCKERFILE_DIR: "."
+  REGISTRY: $$$$
+  REGISTRY_PRODUCER: $YOUR_REGISTERY
+  REGISTRY_CONSUMER: $YOUR_REGISTERY
+  APP: $NAME
+  IMAGE_TAG: $CI_COMMIT_TAG
+  REGISTRY_TOKEN: $PRODUCTION_REGISTRY_TOKEN
+
+
+before_script:
+  - docker --version
+  
+build:
+  stage: build
+  script:
+    - docker build --tag $REGISTRY_CONSUMER/$APP-consumer:$IMAGE_TAG --target=consumer $DOCKERFILE_DIR
+    - docker build --tag $REGISTRY_PRODUCER/$APP-producer:$IMAGE_TAG --target=producer $DOCKERFILE_DIR
+    - docker login -u unused -p $REGISTRY_TOKEN $REGISTRY
+    - docker push $REGISTRY_CONSUMER/$APP-consumer:$IMAGE_TAG
+    - docker push $REGISTRY_PRODUCER/$APP-producer:$IMAGE_TAG
+  retry:
+    max: 2
+    when: runner_system_failure
+
+
+stages:
+  - build

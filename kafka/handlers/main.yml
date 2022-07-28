@@ -1,0 +1,20 @@
+---
+
+
+- name: validatingZookeeper
+  wait_for:
+    host: kafka
+    port: 2181
+    delay: 10
+    timeout: 30
+    state: started
+    msg: "Zookeeper not seem to be running"
+
+- name: validatingKafka
+  wait_for:
+    host: kafka
+    port: 9092
+    delay: 10
+    timeout: 30
+    state: started
+    msg: "Zookeeper not seem to be running"

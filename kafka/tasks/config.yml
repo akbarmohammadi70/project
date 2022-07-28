@@ -1,0 +1,45 @@
+---
+- name: Update the log path
+  become: yes     
+  replace:
+    path: "{{installation_dir}}/config/server.properties"
+    regexp: 'log.dirs=(.+)'
+    replace: 'log.dirs={{installation_dir}}/logs'
+    backup: yes
+
+- name: Update the Java Heap Size for Kafka
+  become: yes   
+  replace:
+    path: "{{installation_dir}}/bin/kafka-server-start.sh"
+    regexp: 'export KAFKA_HEAP_OPTS=(".+")'
+    replace: 'export KAFKA_HEAP_OPTS="-Xmx1G -Xms1G"'
+    backup: yes
+
+- name: Update listener 
+  become: yes   
+  replace:
+    path: "{{installation_dir}}/config/server.properties"
+    regexp: '#listeners=PLAINTEXT://:9092'
+    replace: 'listeners=PLAINTEXT://0.0.0.0:9092'
+    backup: yes
+
+- name: Update adviser
+  become: yes   
+  replace:
+    path: "{{installation_dir}}/config/server.properties"
+    regexp: '#advertised.listeners=PLAINTEXT://your.host.name:9092'
+    replace: 'advertised.listeners=PLAINTEXT://{{ kafkaIp }}:9092'
+    backup: yes
+    
+- name: Create a Service file for ZooKeeper 
+  template:
+    src: servicefilezookeeper.j2
+    dest: /etc/systemd/system/zookeeper.service
+    mode: 0755
+
+
+- name: Create a Service file for kafka 
+  template:
+    src: servicefilekafka.j2
+    dest: /etc/systemd/system/kafka.service
+    mode: 0755

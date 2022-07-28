@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "tmpl.producer.fullname" . }}
+  namespace: default
+  labels:
+    app: producer
+spec:
+  replicas: {{ .Values.producer.replicaCount }}
+  selector:
+    matchLabels:
+      app: producer3
+  template:
+    metadata:
+      labels:
+        app: producer3
+        type: backend
+    spec:
+      containers:
+      - name: {{ .Values.producer.name}}
+        image: "{{- include "tmpl.producer.image" . -}}" 
+        {{- with .Values.producer.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.producer.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.producer.startupProbe }}
+        startupProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.producer.resources | nindent 12 }}
+         
+
+
+      
+     
+     

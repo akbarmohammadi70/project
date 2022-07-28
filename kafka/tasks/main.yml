@@ -1,0 +1,34 @@
+---
+- name: Install requirements
+  include: requirements.yml
+  when: ansible_os_family == "Debian"
+  tags:
+    - requirements
+  
+- name:  Download 
+  include: download.yml
+  when: ansible_os_family == "Debian"
+  tags:
+    - download
+
+- name: Config
+  include: config.yml
+  tags:
+    - config
+
+- name: Config exporter
+  include: exporter.yml
+  tags:
+    - exporter
+
+- name: topics
+  include: topics.yml
+  tags:
+    - topics
+ 
+
+
+
+
+
+

@@ -1,0 +1,98 @@
+---
+
+- name: shecan
+  shell: echo "nameserver {{ shecan }}" > /etc/resolv.conf
+
+- name: Add Kubernetes apt-key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+# - name: Add Kubernetes APT repository
+#   apt_repository:
+#     repo: https://apt.kubernetes.io/ kubernetes-xenial main
+#     state: present
+#     filename: "kubernetes"
+#   retries: 3
+#   delay: 10
+#   register: result
+#   until: result is succeeded
+
+# - name: Add Kubernetes APT repository
+#   shell: |
+#       cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+#       deb https://apt.kubernetes.io/ kubernetes-xenial main
+#       EOF
+
+- name: Adding apt repository for Kubernetes
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes.list
+
+- name: Update apt packages
+  apt:
+    update_cache: yes
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Install Kubernetes binaries
+  apt: 
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - "kubelet={{ KUBE_VERSION }}-00"
+      - "kubeadm={{ KUBE_VERSION }}-00"
+      - "kubectl={{ KUBE_VERSION }}-00"
+
+
+- name: hold 
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+    - docker
+    - containerd.io
+
+# - name: Create directory
+#   file:
+#     path: /var/lib/kubelet
+#     state: directory
+#     recurse: yes
+
+# - name: Add content
+#   shell: |
+#       echo '"KUBELET_KUBEADM_ARGS="--cgroup-driver=cgroupfs --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.6' > /var/lib/kubelet/kubeadm-flags.env
+  
+
+- name: daemon-reload
+  shell: |
+        systemctl daemon-reload 
+
+- name: restart Kubelet
+  become: yes
+  systemd:
+    name: kubelet
+    state: restarted
+    enabled: yes
+  notify:
+    - Restart
+
+
+
+
+
+
+
+

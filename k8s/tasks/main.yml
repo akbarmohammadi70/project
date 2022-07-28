@@ -1,0 +1,52 @@
+---
+- name:  requirements k8s
+  include: requirements.yml
+  delegate_to: k8s
+  tags:
+    - requirements
+
+- name: install Containerd
+  include: Containerd.yml
+  tags:
+    - containerd
+  
+- name: k8s
+  include: k8s.yml
+
+- name: init master node
+  include: master.yml
+  delegate_to: masters
+  tags:
+    - init
+
+- name: Copy the join command to server location
+  become: yes
+  copy: src=join-command dest=/tmp/join-command.sh mode=0777
+  tags:
+    - join
+
+- name: join worker nodes
+  become: yes
+  shell: bash /tmp/join-command.sh
+  delegate_to: "{{ item }}"
+  ignore_errors: yes
+  loop:
+    - node1
+    - node2
+  tags:
+    - join
+
+- name: Add role to worker
+  become: false
+  include: addRole.yml
+  delegate_to: master
+  tags:
+    - role
+
+- name: install helm
+  become: yes
+  include: helm.yml
+  delegate_to: master
+  tags:
+    - helm
+

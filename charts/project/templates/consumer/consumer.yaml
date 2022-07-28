@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "tmpl.consumer.fullname" . }}
+  namespace: default
+  labels:
+    app: consumer
+spec:
+  replicas: {{ .Values.consumer.replicaCount }}
+  selector:
+    matchLabels:
+      app: consumer3
+  template:
+    metadata:
+      labels:
+        app: consumer3
+        type: backend
+    spec:
+      containers:
+      - name: {{ .Values.consumer.name }}
+        image: "{{- include "tmpl.consumer.image" . -}}" 
+        {{- with .Values.consumer.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.consumer.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.consumer.startupProbe }}
+        startupProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.consumer.resources | nindent 12 }}
+         
+
+
+      
+     
+     

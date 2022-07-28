@@ -1,0 +1,17 @@
+
+home_dir: "/home/vagrant"
+MASTER_NODE_IP: 192.168.56.101
+cidr: 10.244.0.0/16
+home: /home/vagrant
+shecan: 178.22.122.100
+google: 4.2.2.4
+PRIVATE_INTERFACE_NAME: enp0s8
+
+docker: 5:19.03.11~3-0~ubuntu
+dockercli: 5:19.03.11~3-0~ubuntu
+containerd: 1.2.13-2
+lsbrelease: xenial
+KUBE_VERSION: 1.23.6
+
+# shecan: 4.2.2.4
+# shecan: 178.22.122.100

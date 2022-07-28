@@ -1,0 +1,56 @@
+---
+
+- name: Initialize the cluster
+  shell: "kubeadm init --kubernetes-version {{ KUBE_VERSION }} --apiserver-advertise-address {{ MASTER_NODE_IP }} --pod-network-cidr {{ cidr }} >> cluster_init.txt"
+  args:
+    chdir: $HOME
+    creates: cluster_init.txt
+  delegate_to: master
+  ignore_errors: yes
+  tags:
+    - init
+
+- name: Create .kube directory
+  file:
+    path: "{{ home }}/.kube"
+    state: directory
+    mode: 0755
+  delegate_to: master
+  tags:
+    - kubeconfig
+
+
+- name: Copy admin.conf to user's kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ home }}/.kube/config"
+    remote_src: yes
+    owner: vagrant
+  delegate_to: master
+  tags:
+    - kubeconfig
+
+
+- name: Install Pod network
+  become: false
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+  delegate_to: master
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+  delegate_to: master
+  tags:
+    - join
+
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+  delegate_to: master
+  tags:
+    - join
+

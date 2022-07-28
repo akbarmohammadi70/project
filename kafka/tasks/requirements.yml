@@ -1,0 +1,27 @@
+---
+- name: Install JRE after apt update
+  become: yes
+  apt:
+    name: 
+      - default-jre
+    state: present
+    update_cache: yes
+- name: Create a group 
+  become: yes
+  group:
+    name: kafka
+    state: present
+- name: Create an user 
+  become: yes
+  user:
+    name: kafka
+    state: present
+    group: kafka
+- name: Create a Directory /opt/kafka
+  become: yes
+  file:
+    path: "{{installation_dir}}"
+    state: directory
+    mode: 0755
+    owner: kafka
+    group: kafka

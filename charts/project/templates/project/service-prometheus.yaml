@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.prometheus.name }}
+  namespace: {{ .Values.service.prometheus.namespace }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.prometheus.port }}
+      targetPort: {{ .Values.service.prometheus.targerPort}}
+      protocol: TCP
+      name: {{ .Values.service.prometheus.name}}
+      nodePort: {{ .Values.service.prometheus.nodePort}}
+  selector:
+    {{- include "tpl.selectorLabelsPrometheus" . | nindent 4 }}
+

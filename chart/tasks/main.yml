@@ -1,0 +1,6 @@
+---
+- name: Deploy project
+  become: no
+  include: deploy.yml
+  tags:
+    - project

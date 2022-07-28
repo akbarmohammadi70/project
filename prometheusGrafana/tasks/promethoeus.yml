@@ -1,0 +1,18 @@
+---
+
+  
+- name: Deploy latest version of Prometheus chart inside monitoring namespace (and create it)
+  kubernetes.core.helm:
+    name: prometheus
+    chart_ref: prometheus-community/prometheus
+    release_namespace: prometheus
+    create_namespace: true
+  tags:
+    - prometheus
+
+- name: delete default config
+  shell: | 
+       kubectl delete cm prometheus-server -n prometheus
+       kubectl delete deploy prometheus-server -n prometheus
+
+

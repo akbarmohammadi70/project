@@ -1,0 +1,13 @@
+---
+- name: Deploy helm repo
+  become: no
+  include: addRepo.yml
+
+- name: Deploy prometheus
+  become: no
+  include: promethoeus.yml
+
+- name: Deploy grafana
+  become: no
+  include: grafana.yml
+

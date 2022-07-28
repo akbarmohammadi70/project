@@ -1,0 +1,13 @@
+---
+- name: copy
+  become: no
+  copy:
+    src: /home/vagrant/project
+    dest: /home/vagrant/
+- name: Deploy project
+  become: no
+  kubernetes.core.helm:
+    name: project
+    chart_ref: /home/vagrant/project/charts/project/
+    release_namespace: default
+    update_repo_cache: True

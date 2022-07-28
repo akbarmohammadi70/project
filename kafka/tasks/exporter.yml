@@ -1,0 +1,41 @@
+---
+- name: wget jmx exporter
+  get_url:
+    url: https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.16.1/jmx_prometheus_javaagent-0.16.1.jar
+    dest: "{{ installation_dir }}/libs/"
+    mode: 755
+
+- name: sample jmx exporter
+  template:
+    src: sample_jmx_exporter.yml.j2
+    dest: "{{ installation_dir }}/config/sample_jmx_exporter.yml"
+    mode: 0755
+
+- name: add extra config
+  shell: |
+       echo "export KAFKA_OPTS=' -javaagent:{{installation_dir}}/libs/jmx_prometheus_javaagent-0.16.1.jar=7075:{{installation_dir}}/config/sample_jmx_exporter.yml'" >> {{installation_dir}}/bin/kafka-server-start.sh
+  notify:
+    - validatingZookeeper
+    - validatingKafka
+  tags:
+    - starts
+
+- name: start zookeeper
+  tags: startservices
+  become: yes
+  systemd:
+    name: zookeeper
+    state: started
+    enabled: yes
+
+- name: start kafka
+  tags: startservices
+  become: yes
+  systemd:
+    name: kafka
+    state: started
+    enabled: yes
+
+
+
+

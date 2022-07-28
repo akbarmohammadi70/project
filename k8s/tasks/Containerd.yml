@@ -1,0 +1,106 @@
+---
+- name: shecan
+  shell: echo "nameserver {{ shecan }}" > /etc/resolv.conf
+  tags:
+    - shecan
+
+- name: Install containerd packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    - gnupg2
+    
+
+- name: Add GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+
+
+- name: Set up the stable repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ lsbrelease }} stable
+    state: present
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Update apt packages
+  apt:
+    update_cache: yes
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Install containerd
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+  with_items:
+    - docker-ce 
+    - docker-ce-cli 
+    - containerd.io
+    # - "docker-ce={{ docker }}-{{ lsbrelease }}"
+    # - "docker-ce-cli={{ dockercli }}-{{ lsbrelease }}"
+    # - "containerd.io={{ containerd }}"
+
+# - name: Create required directories
+#   file:
+#     path: /etc/containerd
+#     state: directory
+#     mode: '0755'
+
+- name: add config
+  shell: |
+      cat > /etc/docker/daemon.json <<EOF
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"]
+      }
+      EOF
+      mkdir -p /etc/systemd/system/docker.service.d
+
+
+- name: daemon-reload
+  shell: |
+        systemctl daemon-reload 
+      
+- name: start Services
+  become: yes
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - docker
+  tags:
+    - startdocker
+
+
+
+
+
+
+
+
